@@ -78,4 +78,14 @@ public class IntelligentChatbot
         
         scanner.close();
 	}
+	
+	 private static String generateResponse(String input) 
+	 {
+        // Check for exact matches in learning model first
+        if (learningModel.containsKey(input)) 
+		{
+            Map<String, Integer> responseCounts = learningModel.get(input);
+            String bestResponse = Collections.max(responseCounts.entrySet(), Map.Entry.comparingByValue()).getKey();
+            return bestResponse;
+        }
 }
