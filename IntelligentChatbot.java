@@ -54,4 +54,8 @@ public class IntelligentChatbot
             learningModel = new HashMap<>();
         }
     }
+	public static void main(String[] args)
+	{
+		
+	}
 }
