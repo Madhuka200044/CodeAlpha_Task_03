@@ -1,6 +1,7 @@
 import java.util.*;
 import java.util.regex.*;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.io.*;
 import java.nio.file.*;
 
@@ -64,7 +65,6 @@ public class IntelligentChatbot
 
     private static void initializeResponsePatterns() 
 	{
-        // Higher priority patterns first
         RESPONSE_PATTERNS.put("farewell", new PatternPriority("(.*)(bye|goodbye|see ya)(.*)", 3));
         RESPONSE_PATTERNS.put("greeting", new PatternPriority("(.*)(hello|hi|hey)(.*)", 3));
         RESPONSE_PATTERNS.put("how_are_you", new PatternPriority("(.*)(how are you|how's it going)(.*)", 2));
@@ -81,6 +81,7 @@ public class IntelligentChatbot
         FAREWELLS.addAll(Arrays.asList("Goodbye!", "See you later!", "Have a nice day!", "Bye bye!"));
     }
 
+    @SuppressWarnings("unchecked")
     private static void loadLearningModel() 
 	{
         synchronized(modelLock) 
@@ -91,8 +92,7 @@ public class IntelligentChatbot
                 try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) 
 				{
                     learningModel = (Map<String, Map<String, Integer>>) ois.readObject();
-                } 
-				catch (IOException | ClassNotFoundException e) 
+                } catch (IOException | ClassNotFoundException e) 
 				{
                     System.err.println("Failed to load learning model: " + e.getMessage());
                     learningModel = new HashMap<>();
@@ -149,7 +149,6 @@ public class IntelligentChatbot
         String sentiment = analyzeSentiment(input);
         String lowerInput = input.toLowerCase();
 
-        // 1. Check learning model first
         synchronized(modelLock) 
 		{
             if (learningModel.containsKey(lowerInput)) 
@@ -160,7 +159,6 @@ public class IntelligentChatbot
             }
         }
 
-        // 2. Pattern matching with priority
         for (Map.Entry<String, PatternPriority> entry : RESPONSE_PATTERNS.entrySet()) 
 		{
             Matcher matcher = entry.getValue().pattern.matcher(lowerInput);
@@ -181,16 +179,16 @@ public class IntelligentChatbot
                         response = "I'm an intelligent chatbot created to assist you!";
                         break;
                     case "weather":
-                        response = getRandomResponse(KNOWLEDGE_BASE.get("weather"));
+                        response = getRandomArrayResponse(KNOWLEDGE_BASE.get("weather"));
                         break;
                     case "time":
-                        response = getRandomResponse(KNOWLEDGE_BASE.get("time"));
+                        response = getRandomArrayResponse(KNOWLEDGE_BASE.get("time"));
                         break;
                     case "date":
-                        response = getRandomResponse(KNOWLEDGE_BASE.get("date"));
+                        response = getRandomArrayResponse(KNOWLEDGE_BASE.get("date"));
                         break;
                     case "joke":
-                        response = getRandomResponse(KNOWLEDGE_BASE.get("joke"));
+                        response = getRandomArrayResponse(KNOWLEDGE_BASE.get("joke"));
                         break;
                     case "farewell":
                         response = getRandomResponse(FAREWELLS);
@@ -203,13 +201,31 @@ public class IntelligentChatbot
             }
         }
 
-        // 3. Default response
         return adjustForSentiment("I'm not sure I understand. Could you rephrase that?", sentiment);
+    }
+
+    private static String getRandomResponse(Collection<String> responses) 
+	{
+        if (responses == null || responses.isEmpty()) 
+		{
+            return "I don't have a response for that.";
+        }
+        int index = new Random().nextInt(responses.size());
+        return responses.toArray(new String[0])[index];
+    }
+
+    private static String getRandomArrayResponse(String[] responses) 
+	{
+        if (responses == null || responses.length == 0) 
+		{
+            return "I don't have a response for that.";
+        }
+        int index = new Random().nextInt(responses.length);
+        return responses[index];
     }
 
     private static String analyzeSentiment(String input) 
 	{
-        // Basic sentiment analysis
         if (input.matches(".*\\b(awesome|great|happy|love|wonderful)\\b.*")) 
 		{
             return "positive";
@@ -234,24 +250,12 @@ public class IntelligentChatbot
         return response;
     }
 
-    private static String getRandomResponse(Collection<String> responses) 
-	{
-        if (responses == null || responses.isEmpty()) 
-		{
-            return "I don't have a response for that.";
-        }
-        int index = new Random().nextInt(responses.size());
-        return responses.toArray(new String[0])[index];
-    }
-
     private static void updateLearningModel(String input, String response) 
 	{
         synchronized(modelLock) 
 		{
             learningModel.putIfAbsent(input.toLowerCase(), new HashMap<>());
             Map<String, Integer> responseCounts = learningModel.get(input.toLowerCase());
-            
-            // Add decay factor to older responses
             responseCounts.replaceAll((k, v) -> (int)(v * 0.95));
             responseCounts.put(response, responseCounts.getOrDefault(response, 0) + 1);
         }
