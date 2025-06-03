@@ -94,5 +94,29 @@ public class IntelligentChatbot
 		{
             Pattern pattern = Pattern.compile(entry.getKey());
             Matcher matcher = pattern.matcher(input);
+			
+			if (matcher.matches()) 
+			{
+                String responseType = entry.getValue();
+                
+                switch (responseType) 
+				{
+                    case "greeting":
+                        return getRandomResponse(GREETINGS);
+                    case "how_are_you":
+                        return "I'm just a chatbot, but I'm functioning well! How about you?";
+                    case "identity":
+                        return "I'm an intelligent chatbot created to assist you!";
+                    case "weather":
+                        return getRandomResponse(KNOWLEDGE_BASE.get("weather"));
+                    case "time":
+                        return getRandomResponse(KNOWLEDGE_BASE.get("time"));
+                    case "date":
+                        return getRandomResponse(KNOWLEDGE_BASE.get("date"));
+                    case "farewell":
+                        return getRandomResponse(FAREWELLS);
+                }
+            }
+        }
             
 }
