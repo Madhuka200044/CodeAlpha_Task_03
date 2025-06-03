@@ -121,5 +121,41 @@ public class IntelligentChatbot
 		// Default response if no patterns match
         return "I'm not sure I understand. Could you rephrase that?";
     }
+	
+	private static String getRandomResponse(Collection<String> responses) {
+        if (responses == null || responses.isEmpty()) {
+            return "I don't have a response for that.";
+        }
+        int index = new Random().nextInt(responses.size());
+        return responses.toArray(new String[0])[index];
+    }
+    
+    private static void updateLearningModel(String input, String response) {
+        learningModel.putIfAbsent(input, new HashMap<>());
+        Map<String, Integer> responseCounts = learningModel.get(input);
+        responseCounts.put(response, responseCounts.getOrDefault(response, 0) + 1);
+    }
+    
+    private static void saveModel() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(MODEL_FILE))) {
+            oos.writeObject(learningModel);
+        } catch (IOException e) {
+            System.err.println("Failed to save learning model: " + e.getMessage());
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static Map<String, Map<String, Integer>> loadModel() {
+        File file = new File(MODEL_FILE);
+        if (file.exists()) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                return (Map<String, Map<String, Integer>>) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                System.err.println("Failed to load learning model: " + e.getMessage());
+            }
+        }
+        return null;
+    }
+}
             
 }
