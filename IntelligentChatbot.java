@@ -118,5 +118,8 @@ public class IntelligentChatbot
                 }
             }
         }
+		// Default response if no patterns match
+        return "I'm not sure I understand. Could you rephrase that?";
+    }
             
 }
