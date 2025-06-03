@@ -57,7 +57,7 @@ public class IntelligentChatbot
 	public static void main(String[] args)
 	{
 		 Scanner scanner = new Scanner(System.in);
-        System.out.println("Intelligent Chatbot: Hello! How can I assist you today? (Type 'quit' to exit)");1
+        System.out.println("Intelligent Chatbot: Hello! How can I assist you today? (Type 'quit' to exit)");
 		
 		while (true) {
             System.out.print("You: ");
