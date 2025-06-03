@@ -88,4 +88,11 @@ public class IntelligentChatbot
             String bestResponse = Collections.max(responseCounts.entrySet(), Map.Entry.comparingByValue()).getKey();
             return bestResponse;
         }
+		
+		// Pattern matching
+        for (Map.Entry<String, String> entry : RESPONSE_PATTERNS.entrySet()) 
+		{
+            Pattern pattern = Pattern.compile(entry.getKey());
+            Matcher matcher = pattern.matcher(input);
+            
 }
